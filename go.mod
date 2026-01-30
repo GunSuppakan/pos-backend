@@ -6,6 +6,8 @@ toolchain go1.24.12
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.10
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/uuid v1.6.0
 	github.com/patcharp/golib v1.0.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.21.0
@@ -19,7 +21,6 @@ require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.6.0 // indirect

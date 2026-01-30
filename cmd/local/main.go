@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"pos-backend/internal/delivery/http/router"
 	"pos-backend/internal/infrastructure"
 	"pos-backend/internal/infrastructure/database"
 	"pos-backend/internal/utility"
@@ -62,7 +63,7 @@ func main() {
 		})
 	})
 
-	// router.SetUpRouter(app, conn)
+	router.SetUpRouter(app, conn)
 
 	if err := app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port"))); err != nil {
 		logs.Error(err)
