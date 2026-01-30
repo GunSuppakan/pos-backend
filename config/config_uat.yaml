@@ -1,0 +1,13 @@
+env: "uat"
+
+app:
+  port: "2255"
+  url: 
+  base_url: 
+
+pg:
+  host: "aws-1-ap-southeast-2.pooler.supabase.com"
+  port: "5432"
+  name: "postgres"
+  username: "postgres.lfuooeyylufmbqwgtkot"
+  password: "uVvmKxFInjvv5Zng"
