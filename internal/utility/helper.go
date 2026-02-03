@@ -2,8 +2,18 @@ package utility
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"image/png"
+	"io"
 	"math/big"
+	"strconv"
+	"strings"
 
+	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/code128"
+	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -39,4 +49,39 @@ func CheckPassword(password, hash string) bool {
 		[]byte(hash),
 		[]byte(password),
 	) == nil
+}
+
+func HashPath(parts ...string) string {
+	data := strings.Join(parts, "/")
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
+}
+
+func MustInt(c *fiber.Ctx, key string) (int, error) {
+	v := c.FormValue(key)
+	i, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, fmt.Errorf("%s must be integer", key)
+	}
+	return i, nil
+}
+
+func GenerateBarcodeImage(
+	value string,
+	width int,
+	height int,
+	writer io.Writer,
+) error {
+
+	bar, err := code128.Encode(value)
+	if err != nil {
+		return err
+	}
+
+	barScaled, err := barcode.Scale(bar, width, height)
+	if err != nil {
+		return err
+	}
+
+	return png.Encode(writer, barScaled)
 }

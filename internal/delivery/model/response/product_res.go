@@ -1,12 +1,11 @@
-package domain
+package response
 
-type Product struct {
-	Model
+type ProductResponse struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Price       int    `json:"price"`
 	Category    string `json:"category"`
 	Active      bool   `json:"active"`
-	Icon        string `json:"icon"`
 	Barcode     string `json:"bar_code"`
+	Icon        string `json:"icon"`
 }

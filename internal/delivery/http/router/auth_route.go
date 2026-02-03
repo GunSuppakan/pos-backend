@@ -27,7 +27,7 @@ func SetupRouteAuth(api fiber.Router, conn infrastructure.Connections, token sec
 	authHandle := handler.NewAuthHandler(authUsecase, accUsecase)
 
 	v1 := api.Group("/v1")
-	authApi := v1.Group("auth")
+	authApi := v1.Group("/auth")
 	{
 		authApi.Post("/register", authHandle.RegisterHandle)
 		authApi.Post("/login", authHandle.LoginHandle)

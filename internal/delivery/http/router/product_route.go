@@ -5,6 +5,7 @@ import (
 	"pos-backend/internal/delivery/http/handler"
 	"pos-backend/internal/infrastructure"
 	"pos-backend/internal/infrastructure/security"
+	"pos-backend/internal/infrastructure/storage"
 	"pos-backend/internal/repository"
 	"pos-backend/internal/usecase"
 
@@ -17,19 +18,27 @@ func SetupRouteProduct(api fiber.Router, conn infrastructure.Connections, token 
 		return
 	}
 
-	accountRepo := repository.NewAccountRepository(conn.DB)
-	authRepo := repository.NewAuthRepository(conn.DB)
-	tokenService := security.NewJWTService()
+	productRepo := repository.NewProductRepository(conn.DB)
+	storageRepo := storage.NewStorageRepository()
+	pathRepo := repository.NewPathRepository(conn.DB)
 
-	authUsecase := usecase.NewAuthUsecase(accountRepo, authRepo, tokenService)
-	accUsecase := usecase.NewAccountUsecase(accountRepo)
+	productUsecase := usecase.NewProductUsecase(productRepo, storageRepo, pathRepo)
 
-	authHandle := handler.NewAuthHandler(authUsecase, accUsecase)
+	productHandle := handler.NewProductHandler(productUsecase)
 
 	v1 := api.Group("/v1")
-	authApi := v1.Group("auth")
+	productApi := v1.Group("/product")
 	{
-		authApi.Post("/register", authHandle.RegisterHandle)
-		authApi.Post("/login", authHandle.LoginHandle)
+		productApi.Get("/", productHandle.GetAllProductHandle)
+		productApi.Get("/:id", productHandle.GetProductByIDHandle)
+		productApi.Get("/:id/barcode", productHandle.GetProductBarcodeHandle)
+		productApi.Post("/", productHandle.CreateProductHandle)
+		productApi.Put("/:id", productHandle.EditProductHandle)
+		// productApi.Put("/:id/image", productHandle.EditProfileProductHandle)
+		productApi.Put("/:id/status", productHandle.EditActiveProductHandle)
+		productApi.Put("/:id/price", productHandle.EditPriceProductHandle)
+		productApi.Delete("/id", productHandle.DeleteProductHandle)
+
 	}
+
 }
