@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"pos-backend/internal/delivery/mapper"
 	"pos-backend/internal/delivery/model/request"
 	"pos-backend/internal/errs"
 	"pos-backend/internal/usecase"
 	"pos-backend/internal/utility"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -168,4 +171,30 @@ func (h *ProductHandler) GetProductBarcodeHandle(c *fiber.Ctx) error {
 		100,
 		c.Response().BodyWriter(),
 	)
+}
+
+func checkTypeCategory(key string) (string, error) {
+	if key == "" {
+		return "", errors.New("category is required")
+	}
+
+	// normalize
+	k := strings.ToLower(strings.TrimSpace(key))
+
+	categoryMap := map[string]string{
+		"water":    "Water",
+		"drink":    "Drink",
+		"beverage": "Drink",
+		"soda":     "Soda",
+		"cola":     "Soda",
+		"food":     "Food",
+		"snack":    "Snack",
+	}
+
+	name, ok := categoryMap[k]
+	if !ok {
+		return "", fmt.Errorf("invalid category: %s", key)
+	}
+
+	return name, nil
 }

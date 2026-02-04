@@ -55,7 +55,7 @@ func (uc *ProductUsecase) GetProductByIDUsecase(id string) (*domain.Product, err
 func (uc *ProductUsecase) CreateProductUsecase(data *domain.Product, icon *multipart.FileHeader) error {
 	data.Uid = uuid.NewV4()
 	if icon != nil {
-		hashedPath := utility.HashPath("apps", data.Uid.String(), icon.Filename)
+		hashedPath := utility.HashPath("product", data.Uid.String(), icon.Filename)
 		path := fmt.Sprintf("product/%s/%s", data.Uid.String(), icon.Filename)
 
 		filePath := domain.FilePath{

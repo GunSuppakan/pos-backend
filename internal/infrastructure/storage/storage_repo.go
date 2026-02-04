@@ -31,9 +31,9 @@ func NewStorageRepository() StorageRepository {
 }
 
 func (s *storageRepository) SaveFile(file *multipart.FileHeader, path string) error {
-	log.Println("[Storage] SaveFile called")
-	log.Println("[Storage] bucket:", s.bucketName)
-	log.Println("[Storage] path:", path)
+	// log.Println("[Storage] SaveFile called")
+	// log.Println("[Storage] bucket:", s.bucketName)
+	// log.Println("[Storage] path:", path)
 
 	src, err := file.Open()
 	if err != nil {
@@ -42,9 +42,9 @@ func (s *storageRepository) SaveFile(file *multipart.FileHeader, path string) er
 	}
 	defer src.Close()
 
-	log.Println("[Storage] filename:", file.Filename)
-	log.Println("[Storage] size:", file.Size)
-	log.Println("[Storage] content-type:", file.Header.Get("Content-Type"))
+	// log.Println("[Storage] filename:", file.Filename)
+	// log.Println("[Storage] size:", file.Size)
+	// log.Println("[Storage] content-type:", file.Header.Get("Content-Type"))
 
 	defer func() {
 		if r := recover(); r != nil {
