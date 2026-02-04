@@ -30,5 +30,9 @@ func SetupRouteCategory(api fiber.Router, conn infrastructure.Connections, token
 	categoryApi := v1.Group("/category")
 	{
 		categoryApi.Post("/", categoryHandle.CreateCategoryHandle)
+		// categoryApi.Put("/", categoryHandle.UpdateCategoryHandle)
+		categoryApi.Get("/", categoryHandle.GetAllCategoryHandle)
+		categoryApi.Get("/:id", categoryHandle.GetCategoryByIDHandle)
+		// categoryApi.Delete("/:id", categoryHandle.DeleteCategoryHandle)
 	}
 }

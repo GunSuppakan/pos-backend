@@ -27,6 +27,12 @@ var (
 		HTTPStatus: http.StatusNotFound,
 	}
 
+	ErrNotFoundCategory = &AppError{
+		Status:     404,
+		Message:    "Category not found",
+		HTTPStatus: http.StatusNotFound,
+	}
+
 	ErrConflict = &AppError{
 		Status:     409,
 		Message:    "Resource already exists",

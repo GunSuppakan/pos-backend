@@ -52,6 +52,21 @@ func (h *ProductHandler) GetProductByIDHandle(c *fiber.Ctx) error {
 	return utility.ResponseSuccess(c, res)
 }
 
+func (h *ProductHandler) GetProductByCatHandle(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return errs.ErrBadRequest
+	}
+	product, err := h.productUC.GetProductByCatUsecase(id)
+	if err != nil {
+		log.Error(err)
+		return errs.HandleHTTPError(c, err)
+	}
+	res := mapper.MapAllProductResponse(product)
+
+	return utility.ResponseSuccess(c, res)
+}
+
 // Create Product
 func (h *ProductHandler) CreateProductHandle(c *fiber.Ctx) error {
 	var req request.CreateProductRequest
@@ -80,18 +95,18 @@ func (h *ProductHandler) CreateProductHandle(c *fiber.Ctx) error {
 }
 
 // Edit Product
-func (h *ProductHandler) EditProductHandle(c *fiber.Ctx) error {
+func (h *ProductHandler) UpdateProductHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {
 		return errs.ErrBadRequest
 	}
-	var req request.EditProductRequest
+	var req request.UpdateProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
 		return errs.HandleHTTPError(c, errs.ErrBadRequest)
 	}
-	product := mapper.MapEditProductToDomain(req)
-	err := h.productUC.EditProductUsecase(id, product)
+	product := mapper.MapUpdateProductToDomain(req)
+	err := h.productUC.UpdateProductUsecase(id, product)
 	if err != nil {
 		log.Error(err)
 		return errs.HandleHTTPError(c, err)
@@ -100,18 +115,18 @@ func (h *ProductHandler) EditProductHandle(c *fiber.Ctx) error {
 }
 
 // Edit Active Product
-func (h *ProductHandler) EditActiveProductHandle(c *fiber.Ctx) error {
+func (h *ProductHandler) UpdateActiveProductHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {
 		return errs.ErrBadRequest
 	}
 
-	var req request.EditActiveProductRequest
+	var req request.UpdateActiveProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
 		return errs.HandleHTTPError(c, errs.ErrBadRequest)
 	}
-	err := h.productUC.EditActiveProductUsecase(id, req.Active)
+	err := h.productUC.UpdateActiveProductUsecase(id, req.Active)
 	if err != nil {
 		log.Error(err)
 		return errs.HandleHTTPError(c, err)
@@ -121,18 +136,18 @@ func (h *ProductHandler) EditActiveProductHandle(c *fiber.Ctx) error {
 }
 
 // Edit Price Product
-func (h *ProductHandler) EditPriceProductHandle(c *fiber.Ctx) error {
+func (h *ProductHandler) UpdatePriceProductHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {
 		return errs.ErrBadRequest
 	}
 
-	var req request.EditPriceProductRequest
+	var req request.UpdatePriceProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
 		return errs.HandleHTTPError(c, errs.ErrBadRequest)
 	}
-	err := h.productUC.EditPriceProductUsecase(id, req.Price)
+	err := h.productUC.UpdatePriceProductUsecase(id, req.Price)
 	if err != nil {
 		log.Error(err)
 		return errs.HandleHTTPError(c, err)
@@ -157,7 +172,6 @@ func (h *ProductHandler) DeleteProductHandle(c *fiber.Ctx) error {
 // Get Product Barcode
 func (h *ProductHandler) GetProductBarcodeHandle(c *fiber.Ctx) error {
 	productID := c.Params("id")
-
 	product, err := h.productUC.GetProductByIDUsecase(productID)
 	if err != nil {
 		return errs.HandleHTTPError(c, err)

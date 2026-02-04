@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"pos-backend/internal/domain"
+	"pos-backend/internal/errs"
 	"pos-backend/internal/infrastructure/storage"
 	"pos-backend/internal/repository"
 	"pos-backend/internal/utility"
@@ -16,20 +17,23 @@ import (
 )
 
 type ProductUsecase struct {
-	productRepo repository.ProductRepository
-	storageRepo storage.StorageRepository
-	pathRepo    repository.FilePathRepository
+	productRepo  repository.ProductRepository
+	categoryRepo repository.CategoryRepository
+	storageRepo  storage.StorageRepository
+	pathRepo     repository.FilePathRepository
 }
 
 func NewProductUsecase(
 	productRepo repository.ProductRepository,
+	categoryRepo repository.CategoryRepository,
 	storageRepo storage.StorageRepository,
 	pathRepo repository.FilePathRepository,
 ) *ProductUsecase {
 	return &ProductUsecase{
-		productRepo: productRepo,
-		storageRepo: storageRepo,
-		pathRepo:    pathRepo,
+		productRepo:  productRepo,
+		storageRepo:  storageRepo,
+		pathRepo:     pathRepo,
+		categoryRepo: categoryRepo,
 	}
 }
 
@@ -44,15 +48,29 @@ func (uc *ProductUsecase) GetAllProductUsecase() ([]domain.Product, error) {
 
 // Get Product By ID
 func (uc *ProductUsecase) GetProductByIDUsecase(id string) (*domain.Product, error) {
-	products, err := uc.productRepo.GetProductByID(id)
+	product, err := uc.productRepo.GetProductByID(id)
 	if err != nil {
 		return nil, err
 	}
-	return products, err
+	return product, err
+}
+
+func (uc *ProductUsecase) GetProductByCatUsecase(id string) ([]domain.Product, error) {
+	product, err := uc.productRepo.GetProductByCat(id)
+	if err != nil {
+		return nil, err
+	}
+	return product, err
 }
 
 // Create Product
 func (uc *ProductUsecase) CreateProductUsecase(data *domain.Product, icon *multipart.FileHeader) error {
+	var key = utility.NormalizeCategoryKey(data.Category)
+	category, err := uc.categoryRepo.GetCategoryByKey(key)
+	if err != nil {
+		return errs.ErrNotFoundCategory
+	}
+
 	data.Uid = uuid.NewV4()
 	if icon != nil {
 		hashedPath := utility.HashPath("product", data.Uid.String(), icon.Filename)
@@ -78,14 +96,15 @@ func (uc *ProductUsecase) CreateProductUsecase(data *domain.Product, icon *multi
 		data.Icon = viper.GetString("app.url") + "/api/v1/image/" + hashedPath
 	}
 
+	data.Category = category.CategoryID
 	data.Barcode = GenerateBarcode(data.Uid.String())
 
 	return uc.productRepo.CreateProduct(data)
 }
 
 // Edit Product
-func (uc *ProductUsecase) EditProductUsecase(id string, data *domain.Product) error {
-	err := uc.productRepo.EditProduct(id, data)
+func (uc *ProductUsecase) UpdateProductUsecase(id string, data *domain.Product) error {
+	err := uc.productRepo.UpdateProduct(id, data)
 	if err != nil {
 		return err
 	}
@@ -93,8 +112,8 @@ func (uc *ProductUsecase) EditProductUsecase(id string, data *domain.Product) er
 }
 
 // Edit Active Product
-func (uc *ProductUsecase) EditActiveProductUsecase(id, active string) error {
-	err := uc.productRepo.EditActiveProduct(id, active)
+func (uc *ProductUsecase) UpdateActiveProductUsecase(id, active string) error {
+	err := uc.productRepo.UpdateActiveProduct(id, active)
 	if err != nil {
 		return err
 	}
@@ -102,8 +121,8 @@ func (uc *ProductUsecase) EditActiveProductUsecase(id, active string) error {
 }
 
 // Edit Price Product
-func (uc *ProductUsecase) EditPriceProductUsecase(id string, price int) error {
-	err := uc.productRepo.EditPriceProduct(id, price)
+func (uc *ProductUsecase) UpdatePriceProductUsecase(id string, price int) error {
+	err := uc.productRepo.UpdatePriceProduct(id, price)
 	if err != nil {
 		return err
 	}

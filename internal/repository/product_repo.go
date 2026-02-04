@@ -12,11 +12,12 @@ import (
 type ProductRepository interface {
 	GetAllProduct() ([]domain.Product, error)
 	GetProductByID(string) (*domain.Product, error)
+	GetProductByCat(string) ([]domain.Product, error)
 	CreateProduct(*domain.Product) error
-	EditProduct(id string, product *domain.Product) error
+	UpdateProduct(id string, product *domain.Product) error
 	// EditProfileProduct(string) error
-	EditActiveProduct(id, status string) error
-	EditPriceProduct(id string, price int) error
+	UpdateActiveProduct(id, status string) error
+	UpdatePriceProduct(id string, price int) error
 	DeleteProduct(string) error
 }
 
@@ -50,6 +51,19 @@ func (r *productRepository) GetProductByID(id string) (*domain.Product, error) {
 	return &product, nil
 }
 
+func (r *productRepository) GetProductByCat(cat string) ([]domain.Product, error) {
+	var products []domain.Product
+
+	if err := r.db.Where("category = ?", cat).Find(&products).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errs.ErrUnauthorized
+		}
+		return nil, errs.ErrInternal
+	}
+
+	return products, nil
+}
+
 func (r *productRepository) CreateProduct(product *domain.Product) error {
 	if err := r.db.Create(&product).Error; err != nil {
 		log.Error(err)
@@ -58,7 +72,7 @@ func (r *productRepository) CreateProduct(product *domain.Product) error {
 	return nil
 }
 
-func (r *productRepository) EditProduct(id string, product *domain.Product) error {
+func (r *productRepository) UpdateProduct(id string, product *domain.Product) error {
 	updates := map[string]interface{}{
 		"name":        product.Name,
 		"description": product.Description,
@@ -73,7 +87,7 @@ func (r *productRepository) EditProduct(id string, product *domain.Product) erro
 	return nil
 }
 
-func (r *productRepository) EditActiveProduct(id, active string) error {
+func (r *productRepository) UpdateActiveProduct(id, active string) error {
 	if err := r.db.Model(&domain.Product{}).Where("id = ?", id).Updates(map[string]interface{}{"active": active}).Error; err != nil {
 		log.Error(err)
 		return err
@@ -81,7 +95,7 @@ func (r *productRepository) EditActiveProduct(id, active string) error {
 	return nil
 }
 
-func (r *productRepository) EditPriceProduct(id string, price int) error {
+func (r *productRepository) UpdatePriceProduct(id string, price int) error {
 	if err := r.db.Model(&domain.Product{}).Where("id = ?", id).Updates(map[string]interface{}{"price": price}).Error; err != nil {
 		log.Error(err)
 		return err

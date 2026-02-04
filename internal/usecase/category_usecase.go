@@ -7,8 +7,6 @@ import (
 	"pos-backend/internal/infrastructure/storage"
 	"pos-backend/internal/repository"
 	"pos-backend/internal/utility"
-	"regexp"
-	"strings"
 
 	"github.com/gofiber/fiber/v2/log"
 	uuid "github.com/satori/go.uuid"
@@ -59,7 +57,7 @@ func (uc *CategoryUsecase) CreateCategoryUsecase(data *domain.Category, icon *mu
 		data.Icon = viper.GetString("app.url") + "/api/v1/image/" + hashedPath
 	}
 
-	data.Key = normalizeCategoryKey(data.NameEng)
+	data.Key = utility.NormalizeCategoryKey(data.NameEng)
 
 	if err := uc.categoryRepo.CreateCategory(data); err != nil {
 		log.Error(err)
@@ -71,9 +69,18 @@ func (uc *CategoryUsecase) CreateCategoryUsecase(data *domain.Category, icon *mu
 	return uc.categoryRepo.UpdateCategoryID(data.Uid.String(), data.CategoryID)
 }
 
-func normalizeCategoryKey(input string) string {
-	key := strings.ToLower(strings.TrimSpace(input))
-	key = strings.ReplaceAll(key, " ", "-")
-	key = regexp.MustCompile(`[^a-z0-9\-]`).ReplaceAllString(key, "")
-	return key
+func (uc *CategoryUsecase) GetAllCategoryUsecase() ([]domain.Category, error) {
+	categories, err := uc.categoryRepo.GetAllCategory()
+	if err != nil {
+		return nil, err
+	}
+	return categories, err
+}
+
+func (uc *CategoryUsecase) GetCategoryByIDUsecase(id string) (*domain.Category, error) {
+	category, err := uc.categoryRepo.GetCategoryByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return category, err
 }

@@ -10,15 +10,14 @@ import (
 func MapCreateProductToDomain(req request.CreateProductRequest) *domain.Product {
 	active, _ := strconv.ParseBool(req.Active)
 	return &domain.Product{
-		Name:        req.Name,
-		Description: req.Description,
-		Price:       req.Price,
-		Category:    req.Category,
-		Active:      active,
+		Name:     req.Name,
+		Price:    req.Price,
+		Category: req.Category,
+		Active:   active,
 	}
 }
 
-func MapEditProductToDomain(req request.EditProductRequest) *domain.Product {
+func MapUpdateProductToDomain(req request.UpdateProductRequest) *domain.Product {
 	active, _ := strconv.ParseBool(req.Active)
 	return &domain.Product{
 		Name:        req.Name,

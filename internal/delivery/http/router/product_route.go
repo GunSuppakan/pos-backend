@@ -21,8 +21,9 @@ func SetupRouteProduct(api fiber.Router, conn infrastructure.Connections, token 
 	productRepo := repository.NewProductRepository(conn.DB)
 	storageRepo := storage.NewStorageRepository()
 	pathRepo := repository.NewPathRepository(conn.DB)
+	categoryRepo := repository.NewCategoryRepository(conn.DB)
 
-	productUsecase := usecase.NewProductUsecase(productRepo, storageRepo, pathRepo)
+	productUsecase := usecase.NewProductUsecase(productRepo, categoryRepo, storageRepo, pathRepo)
 
 	productHandle := handler.NewProductHandler(productUsecase)
 
@@ -32,11 +33,12 @@ func SetupRouteProduct(api fiber.Router, conn infrastructure.Connections, token 
 		productApi.Get("/", productHandle.GetAllProductHandle)
 		productApi.Get("/:id", productHandle.GetProductByIDHandle)
 		productApi.Get("/:id/barcode", productHandle.GetProductBarcodeHandle)
+		productApi.Get("/:id/cat", productHandle.GetProductByCatHandle)
 		productApi.Post("/", productHandle.CreateProductHandle)
-		productApi.Put("/:id", productHandle.EditProductHandle)
+		productApi.Put("/:id", productHandle.UpdateProductHandle)
 		// productApi.Put("/:id/image", productHandle.EditProfileProductHandle)
-		productApi.Put("/:id/status", productHandle.EditActiveProductHandle)
-		productApi.Put("/:id/price", productHandle.EditPriceProductHandle)
+		productApi.Put("/:id/status", productHandle.UpdateActiveProductHandle)
+		productApi.Put("/:id/price", productHandle.UpdatePriceProductHandle)
 		productApi.Delete("/id", productHandle.DeleteProductHandle)
 
 	}

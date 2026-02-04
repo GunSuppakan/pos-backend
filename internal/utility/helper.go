@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"io"
 	"math/big"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -84,4 +85,11 @@ func GenerateBarcodeImage(
 	}
 
 	return png.Encode(writer, barScaled)
+}
+
+func NormalizeCategoryKey(input string) string {
+	key := strings.ToLower(strings.TrimSpace(input))
+	key = strings.ReplaceAll(key, " ", "-")
+	key = regexp.MustCompile(`[^a-z0-9\-]`).ReplaceAllString(key, "")
+	return key
 }

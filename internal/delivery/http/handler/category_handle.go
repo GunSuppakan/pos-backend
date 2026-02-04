@@ -23,7 +23,6 @@ func NewCategoryHandler(categoryUC *usecase.CategoryUsecase) *CategoryHandler {
 
 func (h *CategoryHandler) CreateCategoryHandle(c *fiber.Ctx) error {
 	var req request.CreateCategoryRequest
-	log.Info(req)
 	if err := c.BodyParser(&req); err != nil {
 		return utility.ResponseError(c, fiber.StatusBadRequest, "Required data.")
 	}
@@ -43,4 +42,30 @@ func (h *CategoryHandler) CreateCategoryHandle(c *fiber.Ctx) error {
 
 	return utility.ResponseSuccess(c, "Create Category Success.")
 
+}
+
+func (h *CategoryHandler) GetAllCategoryHandle(c *fiber.Ctx) error {
+	products, err := h.categoryUC.GetAllCategoryUsecase()
+	if err != nil {
+		return errs.HandleHTTPError(c, err)
+	}
+
+	res := mapper.MapAllCategoryResponse(products)
+	return utility.ResponseSuccess(c, res)
+
+}
+
+func (h *CategoryHandler) GetCategoryByIDHandle(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return errs.ErrBadRequest
+	}
+	category, err := h.categoryUC.GetCategoryByIDUsecase(id)
+	if err != nil {
+		log.Error(err)
+		return errs.HandleHTTPError(c, err)
+	}
+	res := mapper.MapCategoryResponse(category)
+
+	return utility.ResponseSuccess(c, res)
 }
