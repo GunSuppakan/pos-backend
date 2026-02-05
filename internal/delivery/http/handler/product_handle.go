@@ -24,19 +24,16 @@ func NewProductHandler(productUC *usecase.ProductUsecase) *ProductHandler {
 	}
 }
 
-// Get Product All
 func (h *ProductHandler) GetAllProductHandle(c *fiber.Ctx) error {
 	products, err := h.productUC.GetAllProductUsecase()
 	if err != nil {
 		return errs.HandleHTTPError(c, err)
 	}
-
 	res := mapper.MapAllProductResponse(products)
 	return utility.ResponseSuccess(c, res)
 
 }
 
-// Get Product By ID
 func (h *ProductHandler) GetProductByIDHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {

@@ -22,12 +22,16 @@ func NewStockHandler(stockUC *usecase.StockUsecase) *StockHandler {
 }
 
 func (h *StockHandler) AddStockHandle(c *fiber.Ctx) error {
-	var req request.AddStockRequest
+	var req request.UpdateStockRequest
 	if err := c.BodyParser(&req); err != nil {
 		return utility.ResponseError(c, fiber.StatusBadRequest, "Required data.")
 	}
 
-	stock := mapper.MapAddStock(req)
+	if req.Quantity <= 0 {
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Quantity must be greater than 0.")
+	}
+
+	stock := mapper.MapUpdateStock(req)
 	err := h.stockUC.AddStockUsecase(stock)
 	if err != nil {
 		log.Error(err)

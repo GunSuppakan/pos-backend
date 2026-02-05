@@ -40,8 +40,7 @@ func NewProductUsecase(
 	}
 }
 
-// Get All Product
-func (uc *ProductUsecase) GetAllProductUsecase() ([]domain.Product, error) {
+func (uc *ProductUsecase) GetAllProductUsecase() ([]domain.ProductDetail, error) {
 	products, err := uc.productRepo.GetAllProduct()
 	if err != nil {
 		return nil, err
@@ -49,21 +48,20 @@ func (uc *ProductUsecase) GetAllProductUsecase() ([]domain.Product, error) {
 	return products, err
 }
 
-// Get Product By ID
-func (uc *ProductUsecase) GetProductByIDUsecase(id string) (*domain.Product, error) {
-	product, err := uc.productRepo.GetProductByID(id)
+func (uc *ProductUsecase) GetProductByIDUsecase(id string) (*domain.ProductDetail, error) {
+	products, err := uc.productRepo.GetProductByID(id)
 	if err != nil {
 		return nil, err
 	}
-	return product, err
+	return products, err
 }
 
-func (uc *ProductUsecase) GetProductByCatUsecase(id string) ([]domain.Product, error) {
-	product, err := uc.productRepo.GetProductByCat(id)
+func (uc *ProductUsecase) GetProductByCatUsecase(id string) ([]domain.ProductDetail, error) {
+	products, err := uc.productRepo.GetProductByCat(id)
 	if err != nil {
 		return nil, err
 	}
-	return product, err
+	return products, err
 }
 
 // Create Product
@@ -111,8 +109,8 @@ func (uc *ProductUsecase) CreateProductUsecase(data *domain.Product, icon *multi
 
 // Edit Product
 func (uc *ProductUsecase) UpdateProductUsecase(id string, data *domain.Product) error {
-	err := uc.productRepo.UpdateProduct(id, data)
-	if err != nil {
+	if err := uc.productRepo.UpdateProduct(id, data); err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -120,8 +118,8 @@ func (uc *ProductUsecase) UpdateProductUsecase(id string, data *domain.Product) 
 
 // Edit Active Product
 func (uc *ProductUsecase) UpdateActiveProductUsecase(id, active string) error {
-	err := uc.productRepo.UpdateActiveProduct(id, active)
-	if err != nil {
+	if err := uc.productRepo.UpdateActiveProduct(id, active); err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -129,8 +127,8 @@ func (uc *ProductUsecase) UpdateActiveProductUsecase(id, active string) error {
 
 // Edit Price Product
 func (uc *ProductUsecase) UpdatePriceProductUsecase(id string, price int) error {
-	err := uc.productRepo.UpdatePriceProduct(id, price)
-	if err != nil {
+	if err := uc.productRepo.UpdatePriceProduct(id, price); err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -138,8 +136,8 @@ func (uc *ProductUsecase) UpdatePriceProductUsecase(id string, price int) error 
 
 // Delete Product
 func (uc *ProductUsecase) DeleteProductUsecase(id string) error {
-	err := uc.productRepo.DeleteProduct(id)
-	if err != nil {
+	if err := uc.productRepo.DeleteProduct(id); err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil

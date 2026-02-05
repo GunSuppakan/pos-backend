@@ -13,7 +13,7 @@ func MapCreateStock(req request.CreateStockRequest) *domain.Stock {
 
 }
 
-func MapAddStock(req request.AddStockRequest) *domain.Stock {
+func MapUpdateStock(req request.UpdateStockRequest) *domain.Stock {
 	return &domain.Stock{
 		ProductID: req.ProductID,
 		Quantity:  req.Quantity,

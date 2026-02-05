@@ -5,7 +5,7 @@ type CreateStockRequest struct {
 	Quantity  int    `json:"quantity"`
 }
 
-type AddStockRequest struct {
+type UpdateStockRequest struct {
 	ProductID string `json:"product_id"`
 	Quantity  int    `json:"quantity"`
 }

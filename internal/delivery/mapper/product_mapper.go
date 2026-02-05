@@ -28,30 +28,38 @@ func MapUpdateProduct(req request.UpdateProductRequest) *domain.Product {
 	}
 }
 
-func MapAllProductResponse(products []domain.Product) []response.ProductResponse {
-	var list []response.ProductResponse
+func MapAllProductResponse(products []domain.ProductDetail) []response.ProductDetailResponse {
+	var list []response.ProductDetailResponse
 	for _, product := range products {
-		list = append(list, response.ProductResponse{
-			Name:        product.Name,
-			Description: product.Description,
-			Price:       product.Price,
-			Category:    product.Category,
-			Active:      product.Active,
-			Barcode:     product.Barcode,
+		list = append(list, response.ProductDetailResponse{
+			ProductID:       product.ProductID,
+			Name:            product.Name,
+			Description:     product.Description,
+			Price:           product.Price,
+			Active:          product.Active,
+			Barcode:         product.Barcode,
+			Icon:            product.Icon,
+			Quantity:        product.Quantity,
+			CategoryNameTh:  product.CategoryNameTh,
+			CategoryNameEng: product.CategoryNameEng,
 		})
 
 	}
 	return list
 }
 
-func MapProductResponse(product *domain.Product) *response.ProductResponse {
-	return &response.ProductResponse{
-		Name:        product.Name,
-		Description: product.Description,
-		Price:       product.Price,
-		Category:    product.Category,
-		Active:      product.Active,
-		Barcode:     product.Barcode,
+func MapProductResponse(product *domain.ProductDetail) *response.ProductDetailResponse {
+	return &response.ProductDetailResponse{
+		ProductID:       product.ProductID,
+		Name:            product.Name,
+		Description:     product.Description,
+		Price:           product.Price,
+		Active:          product.Active,
+		Barcode:         product.Barcode,
+		Icon:            product.Icon,
+		Quantity:        product.Quantity,
+		CategoryNameTh:  product.CategoryNameTh,
+		CategoryNameEng: product.CategoryNameEng,
 	}
 
 }

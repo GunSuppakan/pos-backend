@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"pos-backend/internal/domain"
 	"pos-backend/internal/errs"
 
@@ -9,11 +10,11 @@ import (
 )
 
 type StockRepository interface {
-	CreateStock(id string, quantity int) error
+	CreateStock(string, int) error
 	AddStock(*domain.Stock) error
 	ReduceStock(*domain.Stock) error
-	// GetAllStock() ([]domain.Stock, error)
-	// GetStockByProductID(string) (*domain.Stock, error)
+	GetAllStock() ([]domain.Stock, error)
+	GetStockByID(string) (*domain.Stock, error)
 }
 
 type stockRepository struct {
@@ -66,4 +67,25 @@ func (r *stockRepository) ReduceStock(stock *domain.Stock) error {
 	}
 
 	return nil
+}
+
+func (r *stockRepository) GetAllStock() ([]domain.Stock, error) {
+	var stocks []domain.Stock
+	if err := r.db.Find(&stocks).Error; err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	return stocks, nil
+
+}
+
+func (r *stockRepository) GetStockByID(id string) (*domain.Stock, error) {
+	var stock domain.Stock
+	if err := r.db.Where("product_id = ?", id).First(&stock).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errs.ErrUnauthorized
+		}
+		return nil, errs.ErrInternal
+	}
+	return &stock, nil
 }
