@@ -5,7 +5,7 @@ import (
 	"pos-backend/internal/domain"
 )
 
-func MapCreateAccountToDomain(req request.RegisterRequest) *domain.Account {
+func MapCreateAccount(req request.RegisterRequest) *domain.Account {
 	return &domain.Account{
 		FirstNameTh:    req.FirstNameTh,
 		LastNameTh:     req.LastNameTh,

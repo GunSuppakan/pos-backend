@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func MapCreateProductToDomain(req request.CreateProductRequest) *domain.Product {
+func MapCreateProduct(req request.CreateProductRequest) *domain.Product {
 	active, _ := strconv.ParseBool(req.Active)
 	return &domain.Product{
 		Name:     req.Name,
@@ -17,7 +17,7 @@ func MapCreateProductToDomain(req request.CreateProductRequest) *domain.Product 
 	}
 }
 
-func MapUpdateProductToDomain(req request.UpdateProductRequest) *domain.Product {
+func MapUpdateProduct(req request.UpdateProductRequest) *domain.Product {
 	active, _ := strconv.ParseBool(req.Active)
 	return &domain.Product{
 		Name:        req.Name,

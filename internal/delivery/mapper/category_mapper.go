@@ -6,7 +6,7 @@ import (
 	"pos-backend/internal/domain"
 )
 
-func MapCreateCategoryToDomain(req request.CreateCategoryRequest) *domain.Category {
+func MapCreateCategory(req request.CreateCategoryRequest) *domain.Category {
 	return &domain.Category{
 		NameTh:  req.NameTh,
 		NameEng: req.NameEng,

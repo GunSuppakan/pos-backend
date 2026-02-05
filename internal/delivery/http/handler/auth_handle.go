@@ -29,7 +29,7 @@ func (h *AuthHandler) RegisterHandle(c *fiber.Ctx) error {
 		log.Error(err)
 		return errs.HandleHTTPError(c, errs.ErrBadRequest)
 	}
-	regis := mapper.MapRegisterToDomain(req)
+	regis := mapper.MapRegister(req)
 	err := h.authUC.RegisterUsecase(regis)
 	if err != nil {
 		log.Error(err)
@@ -46,7 +46,7 @@ func (h *AuthHandler) LoginHandle(c *fiber.Ctx) error {
 		log.Error(err)
 	}
 
-	login := mapper.MapLoginToDomain(req)
+	login := mapper.MapLogin(req)
 	token, err := h.authUC.LoginUsecase(login)
 	if err != nil {
 		log.Error(err)

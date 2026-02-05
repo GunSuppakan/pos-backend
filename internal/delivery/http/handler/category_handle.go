@@ -33,7 +33,7 @@ func (h *CategoryHandler) CreateCategoryHandle(c *fiber.Ctx) error {
 		}
 	}
 
-	category := mapper.MapCreateCategoryToDomain(req)
+	category := mapper.MapCreateCategory(req)
 	err = h.categoryUC.CreateCategoryUsecase(category, icon)
 	if err != nil {
 		log.Error(err)

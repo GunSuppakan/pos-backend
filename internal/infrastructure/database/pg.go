@@ -52,6 +52,7 @@ func InitDatabase() (*gorm.DB, error) {
 		&domain.Product{},
 		&domain.FilePath{},
 		&domain.Category{},
+		&domain.Stock{},
 	); err != nil {
 		return nil, fmt.Errorf("auto migrate failed: %w", err)
 	}

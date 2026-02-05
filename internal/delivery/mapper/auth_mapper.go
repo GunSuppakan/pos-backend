@@ -6,7 +6,7 @@ import (
 	"pos-backend/internal/domain"
 )
 
-func MapRegisterToDomain(req request.RegisterRequest) *domain.Account {
+func MapRegister(req request.RegisterRequest) *domain.Account {
 	return &domain.Account{
 		Username:       req.Username,
 		Password:       req.Password,
@@ -20,7 +20,7 @@ func MapRegisterToDomain(req request.RegisterRequest) *domain.Account {
 	}
 }
 
-func MapLoginToDomain(req request.LoginRequest) *domain.Login {
+func MapLogin(req request.LoginRequest) *domain.Login {
 	return &domain.Login{
 		Email:    req.Email,
 		Password: req.Password,

@@ -2,7 +2,7 @@ package domain
 
 type Stock struct {
 	Model
-	Id             string `json:"id"`
-	Stock          int    `json:"stock"`
-	StockRemaining int    `json:"stock_remaining"`
+	ProductID    string `json:"product_id"`
+	Quantity     int    `json:"quantity"`
+	MinThreshold int    `json:"min_threshold"`
 }

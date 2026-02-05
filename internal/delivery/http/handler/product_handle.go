@@ -83,7 +83,7 @@ func (h *ProductHandler) CreateProductHandle(c *fiber.Ctx) error {
 		}
 	}
 
-	product := mapper.MapCreateProductToDomain(req)
+	product := mapper.MapCreateProduct(req)
 	err = h.productUC.CreateProductUsecase(product, icon)
 	if err != nil {
 		log.Error(err)
@@ -105,7 +105,7 @@ func (h *ProductHandler) UpdateProductHandle(c *fiber.Ctx) error {
 		log.Error(err)
 		return errs.HandleHTTPError(c, errs.ErrBadRequest)
 	}
-	product := mapper.MapUpdateProductToDomain(req)
+	product := mapper.MapUpdateProduct(req)
 	err := h.productUC.UpdateProductUsecase(id, product)
 	if err != nil {
 		log.Error(err)

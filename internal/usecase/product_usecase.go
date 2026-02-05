@@ -21,6 +21,7 @@ type ProductUsecase struct {
 	categoryRepo repository.CategoryRepository
 	storageRepo  storage.StorageRepository
 	pathRepo     repository.FilePathRepository
+	stockRepo    repository.StockRepository
 }
 
 func NewProductUsecase(
@@ -28,12 +29,14 @@ func NewProductUsecase(
 	categoryRepo repository.CategoryRepository,
 	storageRepo storage.StorageRepository,
 	pathRepo repository.FilePathRepository,
+	stockRepo repository.StockRepository,
 ) *ProductUsecase {
 	return &ProductUsecase{
 		productRepo:  productRepo,
 		storageRepo:  storageRepo,
 		pathRepo:     pathRepo,
 		categoryRepo: categoryRepo,
+		stockRepo:    stockRepo,
 	}
 }
 
@@ -98,6 +101,10 @@ func (uc *ProductUsecase) CreateProductUsecase(data *domain.Product, icon *multi
 
 	data.Category = category.CategoryID
 	data.Barcode = GenerateBarcode(data.Uid.String())
+
+	if err := uc.stockRepo.CreateStock(data.Uid.String(), 0); err != nil {
+		return errs.ErrInternal
+	}
 
 	return uc.productRepo.CreateProduct(data)
 }

@@ -22,8 +22,9 @@ func SetupRouteProduct(api fiber.Router, conn infrastructure.Connections, token 
 	storageRepo := storage.NewStorageRepository()
 	pathRepo := repository.NewPathRepository(conn.DB)
 	categoryRepo := repository.NewCategoryRepository(conn.DB)
+	stockRepo := repository.NewStockRepository(conn.DB)
 
-	productUsecase := usecase.NewProductUsecase(productRepo, categoryRepo, storageRepo, pathRepo)
+	productUsecase := usecase.NewProductUsecase(productRepo, categoryRepo, storageRepo, pathRepo, stockRepo)
 
 	productHandle := handler.NewProductHandler(productUsecase)
 
