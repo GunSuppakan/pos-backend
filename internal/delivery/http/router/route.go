@@ -15,4 +15,5 @@ func SetUpRouter(app *fiber.App, conn infrastructure.Connections) {
 	SetupRouteProduct(api, conn, token)
 	SetupRouteCategory(api, conn, token)
 	SetupRouteStock(api, conn, token)
+	SetupRouteOrder(api, conn, token)
 }

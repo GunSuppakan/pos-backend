@@ -44,4 +44,10 @@ var (
 		Message:    "Internal server error",
 		HTTPStatus: http.StatusInternalServerError,
 	}
+
+	ErrInsufficientStock = &AppError{
+		Status:     507,
+		Message:    "Insufficient stock.",
+		HTTPStatus: http.StatusInsufficientStorage,
+	}
 )

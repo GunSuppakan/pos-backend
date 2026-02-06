@@ -100,7 +100,12 @@ func (uc *ProductUsecase) CreateProductUsecase(data *domain.Product, icon *multi
 	data.Category = category.CategoryID
 	data.Barcode = GenerateBarcode(data.Uid.String())
 
-	if err := uc.stockRepo.CreateStock(data.Uid.String(), 0); err != nil {
+	stock := *&domain.Stock{
+		ProductID: data.Uid.String(),
+		Quantity:  0,
+	}
+
+	if err := uc.stockRepo.CreateStock(&stock); err != nil {
 		return errs.ErrInternal
 	}
 
