@@ -4,17 +4,14 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"image/png"
 	"io"
 	"math/big"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/code128"
-	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -56,15 +53,6 @@ func HashPath(parts ...string) string {
 	data := strings.Join(parts, "/")
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
-}
-
-func MustInt(c *fiber.Ctx, key string) (int, error) {
-	v := c.FormValue(key)
-	i, err := strconv.Atoi(v)
-	if err != nil {
-		return 0, fmt.Errorf("%s must be integer", key)
-	}
-	return i, nil
 }
 
 func GenerateBarcodeImage(

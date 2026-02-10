@@ -37,10 +37,12 @@ func SetupRouteProduct(api fiber.Router, conn infrastructure.Connections, token 
 		productApi.Get("/:id/barcode", productHandle.GetProductBarcodeHandle)
 		productApi.Post("/", productHandle.CreateProductHandle)
 		productApi.Put("/:id", productHandle.UpdateProductHandle)
-		// productApi.Put("/:id/image", productHandle.EditProfileProductHandle)
+		// productApi.Post("/:id/image", productHandle.EditProfileProductHandle)
 		productApi.Put("/:id/status", productHandle.UpdateActiveProductHandle)
-		productApi.Put("/:id/price", productHandle.UpdatePriceProductHandle)
 		productApi.Delete("/id", productHandle.DeleteProductHandle)
+
+		productApi.Get("/:id/price", productHandle.GetPriceByIDHandle)
+		productApi.Put("/:id/price", productHandle.UpdatePriceProductHandle)
 
 	}
 

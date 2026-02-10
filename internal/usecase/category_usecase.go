@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"pos-backend/internal/domain"
+	"pos-backend/internal/errs"
 	"pos-backend/internal/infrastructure/storage"
 	"pos-backend/internal/repository"
 	"pos-backend/internal/utility"
@@ -32,6 +33,9 @@ func NewCategoryUsecase(
 }
 
 func (uc *CategoryUsecase) CreateCategoryUsecase(data *domain.Category, icon *multipart.FileHeader) error {
+	if !utility.IsImage(icon, icon.Filename) {
+		return errs.ErrBadRequest
+	}
 	data.Uid = uuid.NewV4()
 	if icon != nil {
 		hashedPath := utility.HashPath("category", data.Uid.String(), icon.Filename)

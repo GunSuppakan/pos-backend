@@ -6,23 +6,33 @@ import (
 	"pos-backend/internal/repository"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type StockUsecase struct {
-	stockRepo repository.StockRepository
-	db        gorm.DB
+	stockRepo   repository.StockRepository
+	productRepo repository.ProductRepository
+	db          gorm.DB
 }
 
 func NewStockUsecase(
 	stockRepo repository.StockRepository,
+	productRepo repository.ProductRepository,
 	db gorm.DB,
 ) *StockUsecase {
 	return &StockUsecase{
-		stockRepo: stockRepo,
-		db:        db,
+		stockRepo:   stockRepo,
+		productRepo: productRepo,
+		db:          db,
 	}
+}
+
+func (uc *StockUsecase) GetStockTransByOrderIDUsecase(orderID string) ([]domain.StockTransaction, error) {
+	stockTrans, err := uc.stockRepo.GetStockTransByID(orderID)
+	if err != nil {
+		return nil, err
+	}
+	return stockTrans, nil
 }
 
 func (uc *StockUsecase) AddStockUsecase(stock *domain.Stock) error {
@@ -50,11 +60,11 @@ func (uc *StockUsecase) AddStockUsecase(stock *domain.Stock) error {
 		}
 
 		dataTrans := domain.StockTransaction{
-			ProductID:    stock.ProductID,
-			Type:         "in",
-			Quantity:     stock.Quantity,
-			BalanceAfter: beforeQty + stock.Quantity,
-			ReferenceID:  uuid.NewString(),
+			ProductID:     stock.ProductID,
+			Type:          "in",
+			DetailType:    "buy",
+			Quantity:      stock.Quantity,
+			QuantityAfter: beforeQty + stock.Quantity,
 		}
 
 		return uc.stockRepo.AddTransactionStockTx(tx, &dataTrans)
@@ -76,28 +86,24 @@ func (uc *StockUsecase) ReduceStockUsecase(stock *domain.Stock) error {
 		return errs.ErrNotFound
 	}
 
-	// กัน stock ไม่พอ
 	if beforeStock.Quantity < stock.Quantity {
 		return errs.ErrInsufficientStock
 	}
 
-	// 🔥 แนะนำ: ทำใน transaction
 	return uc.db.Transaction(func(tx *gorm.DB) error {
 
-		// 1️⃣ reduce stock
 		if err := uc.stockRepo.ReduceStockTx(tx, stock); err != nil {
 			return err
 		}
 
-		balanceAfter := beforeStock.Quantity - stock.Quantity
+		quantityAfter := beforeStock.Quantity - stock.Quantity
 
-		// 2️⃣ create stock transaction
 		dataTrans := domain.StockTransaction{
-			ProductID:    stock.ProductID,
-			Type:         "out",
-			Quantity:     stock.Quantity,
-			BalanceAfter: balanceAfter,
-			ReferenceID:  uuid.NewString(), // หรือ orderID
+			ProductID:     stock.ProductID,
+			Type:          "out",
+			DetailType:    "sell",
+			Quantity:      stock.Quantity,
+			QuantityAfter: quantityAfter,
 		}
 
 		if err := uc.stockRepo.AddTransactionStockTx(tx, &dataTrans); err != nil {
@@ -107,43 +113,3 @@ func (uc *StockUsecase) ReduceStockUsecase(stock *domain.Stock) error {
 		return nil
 	})
 }
-
-// func (uc *StockUsecase) AddStockUsecase(stock *domain.Stock) error {
-// 	beforeStock, err := uc.stockRepo.GetStockByID(stock.ProductID)
-// 	if err != nil {
-// 		log.Error(err)
-// 		return err
-// 	}
-
-// 	var beforeStockCount int
-// 	if beforeStock == nil {
-// 		if err := uc.stockRepo.CreateStock(stock); err != nil {
-// 			log.Error(err)
-// 			return err
-// 		}
-// 		beforeStockCount = 0
-// 	} else {
-// 		if err := uc.stockRepo.AddStock(stock); err != nil {
-// 			log.Error(err)
-// 			return err
-// 		}
-// 		beforeStockCount = beforeStock.Quantity
-// 	}
-
-// 	balanceAfter := beforeStockCount + stock.Quantity
-
-// 	dataTrans := domain.StockTransaction{
-// 		ProductID:    stock.ProductID,
-// 		Type:         "in",
-// 		Quantity:     stock.Quantity,
-// 		BalanceAfter: balanceAfter,
-// 		ReferenceID:  uuid.NewString(),
-// 	}
-
-// 	if err := uc.stockRepo.AddTransactionStock(&dataTrans); err != nil {
-// 		log.Error(err)
-// 		return err
-// 	}
-
-// 	return nil
-// }

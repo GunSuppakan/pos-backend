@@ -38,7 +38,6 @@ func InitDatabase() (*gorm.DB, error) {
 		return nil, fmt.Errorf("connect database failed: %w", err)
 	}
 
-	// ใช้ dbresolver หลังจาก db ไม่ nil แล้วเท่านั้น
 	if err := db.Use(dbresolver.Register(dbresolver.Config{
 		Sources:           []gorm.Dialector{postgres.Open(dsn)},
 		Policy:            dbresolver.RandomPolicy{},
@@ -50,6 +49,7 @@ func InitDatabase() (*gorm.DB, error) {
 	if err := db.AutoMigrate(
 		&domain.Account{},
 		&domain.Product{},
+		&domain.ProductTransaction{},
 		&domain.FilePath{},
 		&domain.Category{},
 		&domain.Stock{},

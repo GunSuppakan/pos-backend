@@ -29,6 +29,10 @@ func SetupRouteOrder(api fiber.Router, conn infrastructure.Connections, token se
 	orderApi := v1.Group("/order")
 	{
 		orderApi.Post("/", orderHandle.CreateOrderHandle)
-		orderApi.Post("/:id", orderHandle.ConfirmOrderHandle)
+		orderApi.Post("/:id/confirm", orderHandle.ConfirmOrderHandle)
+		orderApi.Post("/:id/cancel", orderHandle.CancelOrderHandle)
+		orderApi.Get("/:id", orderHandle.GetOrderDetailByIDHandle)
+		// orderApi.Get("", orderHandle.GetAllOrderHandle)
+
 	}
 }

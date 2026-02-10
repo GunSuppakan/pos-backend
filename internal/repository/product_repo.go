@@ -16,6 +16,8 @@ type ProductRepository interface {
 
 	CreateProduct(*domain.Product) error
 	UpdateProduct(id string, product *domain.Product) error
+	AddPriceTransaction(*domain.ProductTransaction) error
+	GetPriceByID(string) ([]domain.ProductPrice, error)
 	// EditProfileProduct(string) error
 	UpdateActiveProduct(id, status string) error
 	UpdatePriceProduct(id string, price int) error
@@ -149,7 +151,7 @@ func (r *productRepository) UpdateActiveProduct(id, active string) error {
 }
 
 func (r *productRepository) UpdatePriceProduct(id string, price int) error {
-	if err := r.db.Model(&domain.Product{}).Where("id = ?", id).Updates(map[string]interface{}{"price": price}).Error; err != nil {
+	if err := r.db.Model(&domain.Product{}).Where("uid = ?", id).Updates(map[string]interface{}{"price": price}).Error; err != nil {
 		log.Error(err)
 		return err
 	}
@@ -164,4 +166,63 @@ func (r *productRepository) DeleteProduct(id string) error {
 		return errs.ErrInternal
 	}
 	return nil
+}
+
+func (r *productRepository) AddPriceTransaction(product *domain.ProductTransaction) error {
+	if err := r.db.Create(&product).Error; err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (r *productRepository) GetPriceByID(id string) ([]domain.ProductPrice, error) {
+	var rows []domain.ProductPriceRow
+
+	err := r.db.Table("products AS prod").
+		Select(`
+			prod.uid AS product_id,
+			prod.name AS name,
+			trans.created_at AS created_at,
+			trans.type AS type,
+			trans.price_before AS price_before,
+			trans.price_after AS price_after,
+		`).
+		Joins("INNER JOIN product_transactions AS trans ON prod.uid = trans.product_id").
+		Where("prod.uid = ?", id).
+		Order("trans.created_at ASC").
+		Scan(&rows).Error
+
+	if err != nil {
+		return nil, errs.ErrInternal
+	}
+
+	group := make(map[string]*domain.ProductPrice)
+
+	for _, r := range rows {
+		if _, ok := group[r.ProductID]; !ok {
+			group[r.ProductID] = &domain.ProductPrice{
+				ProductID: r.ProductID,
+				Name:      r.Name,
+				Prices:    []domain.ListHistoryPrice{},
+			}
+		}
+
+		group[r.ProductID].Prices = append(
+			group[r.ProductID].Prices,
+			domain.ListHistoryPrice{
+				CreatedAt:   r.CreatedAt,
+				PriceBefore: r.PriceBefore,
+				PriceAfter:  r.PriceAfter,
+				Type:        r.Type,
+			},
+		)
+	}
+
+	var result []domain.ProductPrice
+	for _, v := range group {
+		result = append(result, *v)
+	}
+
+	return result, nil
 }

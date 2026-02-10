@@ -41,3 +41,17 @@ func (h *StockHandler) AddStockHandle(c *fiber.Ctx) error {
 	return utility.ResponseSuccess(c, "Add Stock Success.")
 
 }
+
+func (h *StockHandler) GetStockTransByOrderIDHandle(c *fiber.Ctx) error {
+	orderID := c.Params("id")
+	if orderID == "" {
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Required orderID.")
+	}
+
+	orderTrans, err := h.stockUC.GetStockTransByOrderIDUsecase(orderID)
+	if err != nil {
+		log.Error(err)
+		return errs.HandleHTTPError(c, err)
+	}
+	return utility.ResponseSuccess(c, orderTrans)
+}

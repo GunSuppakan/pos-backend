@@ -6,6 +6,7 @@ import (
 	"pos-backend/internal/errs"
 	"pos-backend/internal/repository"
 
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -31,7 +32,6 @@ func NewOrderUsecase(
 	}
 }
 func (uc *OrderUsecase) CreateOrderUsecase(req request.CreateOrderRequest) (*domain.Order, error) {
-
 	var (
 		order        *domain.Order
 		OrderDetails []domain.OrderDetail
@@ -64,9 +64,9 @@ func (uc *OrderUsecase) CreateOrderUsecase(req request.CreateOrderRequest) (*dom
 
 		order = &domain.Order{
 			OrderID:     uuid.NewString(),
-			ReferenceID: uuid.NewString(),
 			PaymentType: req.PaymentType,
 			TotalPrice:  totalPrice,
+			Status:      "pending",
 		}
 
 		if err := uc.orderRepo.CreateOrder(tx, order); err != nil {
@@ -92,13 +92,13 @@ func (uc *OrderUsecase) CreateOrderUsecase(req request.CreateOrderRequest) (*dom
 
 func (uc *OrderUsecase) ConfirmOrderUsecase(orderID string) error {
 	return uc.db.Transaction(func(tx *gorm.DB) error {
-		items, err := uc.orderRepo.GetOrderDetailByID(tx, orderID)
+		orders, err := uc.orderRepo.GetOrderDetailByID(orderID)
 		if err != nil {
 			return err
 		}
 
-		for _, item := range items {
-			beforeStock, err := uc.stockRepo.GetStockByID(item.ProductID)
+		for _, order := range orders {
+			beforeStock, err := uc.stockRepo.GetStockByID(order.ProductID)
 			if err != nil {
 				return err
 			}
@@ -106,33 +106,107 @@ func (uc *OrderUsecase) ConfirmOrderUsecase(orderID string) error {
 				return errs.ErrInsufficientStock
 			}
 
-			if beforeStock.Quantity < item.Quantity {
+			if beforeStock.Quantity < order.Quantity {
 				return errs.ErrInsufficientStock
 			}
 
 			err = uc.stockRepo.ReduceStockTx(tx, &domain.Stock{
-				ProductID: item.ProductID,
-				Quantity:  item.Quantity,
+				ProductID: order.ProductID,
+				Quantity:  order.Quantity,
 			})
 			if err != nil {
 				return err
 			}
 
-			balanceAfter := beforeStock.Quantity - item.Quantity
+			quantityAfter := beforeStock.Quantity - order.Quantity
 
 			trans := domain.StockTransaction{
-				ProductID:    item.ProductID,
-				Type:         "out",
-				Quantity:     item.Quantity,
-				BalanceAfter: balanceAfter,
-				ReferenceID:  orderID,
+				ProductID:     order.ProductID,
+				Type:          "out",
+				DetailType:    "sell",
+				Quantity:      order.Quantity,
+				QuantityAfter: quantityAfter,
+				OrderID:       orderID,
 			}
 
 			if err := uc.stockRepo.AddTransactionStockTx(tx, &trans); err != nil {
+				return err
+			}
+
+			if err := uc.orderRepo.UpdateStatusOrder(orderID, "paid"); err != nil {
 				return err
 			}
 		}
 		return nil
 	})
 
+}
+
+func (uc *OrderUsecase) CancelOrderUsecase(orderID string) error {
+	return uc.db.Transaction(func(tx *gorm.DB) error {
+		orders, err := uc.orderRepo.GetOrderDetailByID(orderID) // order
+		if err != nil {
+			return err
+		}
+
+		orderTrans, _ := uc.stockRepo.GetStockTransByID(orderID)
+
+		if len(orderTrans) > 0 {
+			for _, order := range orders {
+				beforeStock, err := uc.stockRepo.GetStockByID(order.ProductID) // stock
+				if err != nil {
+					return err
+				}
+				if beforeStock == nil {
+					return errs.ErrInsufficientStock
+				}
+
+				if beforeStock.Quantity < order.Quantity {
+					return errs.ErrInsufficientStock
+				}
+
+				err = uc.stockRepo.AddStockTx(tx, &domain.Stock{
+					ProductID: order.ProductID,
+					Quantity:  order.Quantity,
+				})
+				if err != nil {
+					return err
+				}
+
+				quantityAfter := beforeStock.Quantity + order.Quantity
+
+				trans := domain.StockTransaction{
+					ProductID:     order.ProductID,
+					Type:          "in",
+					DetailType:    "cancel",
+					Quantity:      order.Quantity,
+					QuantityAfter: quantityAfter,
+					OrderID:       orderID,
+				}
+
+				if err := uc.stockRepo.AddTransactionStockTx(tx, &trans); err != nil {
+					return err
+				}
+				if err := uc.orderRepo.UpdateStatusOrder(orderID, "refund"); err != nil {
+					return err
+				}
+
+			}
+		} else {
+			if err := uc.orderRepo.UpdateStatusOrder(orderID, "cancel"); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
+func (uc *OrderUsecase) GetOrderByIDUsecase(id string) ([]domain.OrderDetails, error) {
+	orders, err := uc.orderRepo.GetListOrderDetailByID(id)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	return orders, nil
 }

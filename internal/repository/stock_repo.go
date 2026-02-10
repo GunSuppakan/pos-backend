@@ -15,6 +15,7 @@ type StockRepository interface {
 	ReduceStock(*domain.Stock) error
 	GetAllStock() ([]domain.Stock, error)
 	GetStockByID(string) (*domain.Stock, error)
+	GetStockTransByID(string) ([]domain.StockTransaction, error)
 
 	AddStockTx(tx *gorm.DB, stock *domain.Stock) error
 	CreateStockTx(tx *gorm.DB, stock *domain.Stock) error
@@ -103,6 +104,17 @@ func (r *stockRepository) AddTransactionStock(trans *domain.StockTransaction) er
 		return err
 	}
 	return nil
+}
+
+func (r *stockRepository) GetStockTransByID(orderID string) ([]domain.StockTransaction, error) {
+	var stockTrans []domain.StockTransaction
+	if err := r.db.Where("order_id = ?", orderID).Find(&stockTrans).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, errs.ErrInternal
+	}
+	return stockTrans, nil
 }
 
 func (r *stockRepository) CreateStockTx(tx *gorm.DB, stock *domain.Stock) error {

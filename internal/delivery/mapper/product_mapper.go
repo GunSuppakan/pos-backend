@@ -63,3 +63,32 @@ func MapProductResponse(product *domain.ProductDetail) *response.ProductDetailRe
 	}
 
 }
+
+func MapPriceResponse(prices []domain.ProductPrice) []response.ProductPriceResponse {
+	var result []response.ProductPriceResponse
+
+	for _, p := range prices {
+		result = append(result, response.ProductPriceResponse{
+			ProductID: p.ProductID,
+			Name:      p.Name,
+			Prices:    mapHistory(p.Prices),
+		})
+	}
+
+	return result
+}
+
+func mapHistory(histories []domain.ListHistoryPrice) []response.ListHistoryPriceResponse {
+	var list []response.ListHistoryPriceResponse
+
+	for _, h := range histories {
+		list = append(list, response.ListHistoryPriceResponse{
+			CreatedAt:   h.CreatedAt,
+			PriceBefore: h.PriceBefore,
+			PriceAfter:  h.PriceAfter,
+			Type:        h.Type,
+		})
+	}
+
+	return list
+}

@@ -1,14 +1,11 @@
 package handler
 
 import (
-	"errors"
-	"fmt"
 	"pos-backend/internal/delivery/mapper"
 	"pos-backend/internal/delivery/model/request"
 	"pos-backend/internal/errs"
 	"pos-backend/internal/usecase"
 	"pos-backend/internal/utility"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -95,12 +92,12 @@ func (h *ProductHandler) CreateProductHandle(c *fiber.Ctx) error {
 func (h *ProductHandler) UpdateProductHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {
-		return errs.ErrBadRequest
+		utility.ResponseError(c, fiber.StatusBadRequest, "Required ProductID.")
 	}
 	var req request.UpdateProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
-		return errs.HandleHTTPError(c, errs.ErrBadRequest)
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Required data.")
 	}
 	product := mapper.MapUpdateProduct(req)
 	err := h.productUC.UpdateProductUsecase(id, product)
@@ -115,13 +112,13 @@ func (h *ProductHandler) UpdateProductHandle(c *fiber.Ctx) error {
 func (h *ProductHandler) UpdateActiveProductHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {
-		return errs.ErrBadRequest
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Required ProductID.")
 	}
 
 	var req request.UpdateActiveProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
-		return errs.HandleHTTPError(c, errs.ErrBadRequest)
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Required data.")
 	}
 	err := h.productUC.UpdateActiveProductUsecase(id, req.Active)
 	if err != nil {
@@ -136,14 +133,19 @@ func (h *ProductHandler) UpdateActiveProductHandle(c *fiber.Ctx) error {
 func (h *ProductHandler) UpdatePriceProductHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {
-		return errs.ErrBadRequest
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Required ProductID.")
 	}
 
 	var req request.UpdatePriceProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
-		return errs.HandleHTTPError(c, errs.ErrBadRequest)
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Required data.")
 	}
+
+	if req.Price <= 0 {
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Price less than 0.")
+	}
+
 	err := h.productUC.UpdatePriceProductUsecase(id, req.Price)
 	if err != nil {
 		log.Error(err)
@@ -156,7 +158,7 @@ func (h *ProductHandler) UpdatePriceProductHandle(c *fiber.Ctx) error {
 func (h *ProductHandler) DeleteProductHandle(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {
-		return errs.ErrBadRequest
+		return utility.ResponseError(c, fiber.StatusBadRequest, "Required ProductID.")
 	}
 	err := h.productUC.DeleteProductUsecase(id)
 	if err != nil {
@@ -169,6 +171,9 @@ func (h *ProductHandler) DeleteProductHandle(c *fiber.Ctx) error {
 // Get Product Barcode
 func (h *ProductHandler) GetProductBarcodeHandle(c *fiber.Ctx) error {
 	productID := c.Params("id")
+	if productID == "" {
+		utility.ResponseError(c, fiber.StatusBadRequest, "Required ProductID.")
+	}
 	product, err := h.productUC.GetProductByIDUsecase(productID)
 	if err != nil {
 		return errs.HandleHTTPError(c, err)
@@ -176,36 +181,23 @@ func (h *ProductHandler) GetProductBarcodeHandle(c *fiber.Ctx) error {
 
 	c.Set("Content-Type", "image/png")
 
-	return utility.GenerateBarcodeImage(
-		product.Barcode,
-		300,
-		100,
-		c.Response().BodyWriter(),
-	)
+	return utility.GenerateBarcodeImage(product.Barcode, 300, 100, c.Response().BodyWriter())
 }
 
-func checkTypeCategory(key string) (string, error) {
-	if key == "" {
-		return "", errors.New("category is required")
+func (h *ProductHandler) GetPriceByIDHandle(c *fiber.Ctx) error {
+	productID := c.Params("id")
+	if productID == "" {
+		utility.ResponseError(c, fiber.StatusBadRequest, "Required ProductID.")
 	}
 
-	// normalize
-	k := strings.ToLower(strings.TrimSpace(key))
-
-	categoryMap := map[string]string{
-		"water":    "Water",
-		"drink":    "Drink",
-		"beverage": "Drink",
-		"soda":     "Soda",
-		"cola":     "Soda",
-		"food":     "Food",
-		"snack":    "Snack",
+	productPrice, err := h.productUC.GetPriceByIDUsecase(productID)
+	if err != nil {
+		log.Error(err)
+		return err
 	}
 
-	name, ok := categoryMap[k]
-	if !ok {
-		return "", fmt.Errorf("invalid category: %s", key)
-	}
+	res := mapper.MapPriceResponse(productPrice)
 
-	return name, nil
+	return utility.ResponseSuccess(c, res)
+
 }

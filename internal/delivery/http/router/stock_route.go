@@ -18,8 +18,9 @@ func SetupRouteStock(api fiber.Router, conn infrastructure.Connections, token se
 	}
 
 	stockRepo := repository.NewStockRepository(conn.DB)
+	productRepo := repository.NewProductRepository(conn.DB)
 
-	stockUsecase := usecase.NewStockUsecase(stockRepo, *conn.DB)
+	stockUsecase := usecase.NewStockUsecase(stockRepo, productRepo, *conn.DB)
 
 	stockHandle := handler.NewStockHandler(stockUsecase)
 
@@ -27,5 +28,6 @@ func SetupRouteStock(api fiber.Router, conn infrastructure.Connections, token se
 	stockApi := v1.Group("/stock")
 	{
 		stockApi.Post("/add", stockHandle.AddStockHandle)
+		stockApi.Get("/:id/trans", stockHandle.GetStockTransByOrderIDHandle)
 	}
 }
